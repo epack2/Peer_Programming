@@ -13,6 +13,8 @@ public class Main {
     static final String COURSES_CSV = "courses.csv";
     static final String ENROLLMENTS_CSV = "enrollments.csv";
 
+
+
     public static void main(String[] args) {
         boolean demo = args.length > 0 && "--demo".equalsIgnoreCase(args[0]);
         if (demo) {
@@ -260,5 +262,5 @@ public class Main {
     // -------------------- Utils --------------------
     private static void print(String s){ System.out.print(s); }
     private static void println(String s){ System.out.println(s); }
-    private static void audit(String ev){ auditLog.add(LocalDateTime.now() + " | " + ev); }
+    static void audit(String ev){ auditLog.add(LocalDateTime.now() + " | " + ev); }
 }
