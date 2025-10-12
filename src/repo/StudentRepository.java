@@ -2,8 +2,7 @@ package repo;
 
 import model.Student;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * Repository interface for students.

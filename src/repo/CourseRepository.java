@@ -2,8 +2,7 @@ package repo;
 
 import model.Course;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 public interface CourseRepository {
     List<Course> findAll();

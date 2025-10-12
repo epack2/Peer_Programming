@@ -1,12 +1,6 @@
 package util;
 
-/**
- * Configuration helper: checks system properties then environment variables, otherwise default.
- * Keys:
- *   students.file
- *   courses.file
- *   enrollments.file
- */
+
 public final class Config {
     private Config() { }
 

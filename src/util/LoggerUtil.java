@@ -1,8 +1,6 @@
 package util;
 
-import java.util.logging.ConsoleHandler;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.logging.*;
 
 /**
  * Small logger helper to provide consistent logger config.

@@ -2,9 +2,7 @@ package model;
 
 import util.ValidationUtil;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * Domain model: Course (no UI / persistence here).

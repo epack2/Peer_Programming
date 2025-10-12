@@ -1,18 +1,12 @@
 package service;
 
-import exception.EnrollmentException;
-import exception.ValidationException;
-import model.Course;
-import model.Student;
-import repo.CourseRepository;
-import repo.EnrollmentRepository;
-import repo.StudentRepository;
-import util.LoggerUtil;
-import util.ValidationUtil;
+import exception.*;
+import model.*;
+import repo.*;
+import util.*;
 
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.logging.Logger;
 
 /**
