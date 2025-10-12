@@ -4,32 +4,31 @@ import exception.*;
 import model.*;
 import repo.*;
 import util.*;
-
-import java.util.ArrayList;
 import java.util.*;
 import java.util.logging.Logger;
 
 /**
- * Business rules live here: add/list/search, enroll/drop logic, waitlist FIFO promotion.
- * This class is designed for easy testing (no UI, no file IO directly).
+FIFO AND DECLARATIONS
  */
 public class RegistrationService {
-    private final StudentRepository studentRepo;
-    private final CourseRepository courseRepo;
-    private final EnrollmentRepository enrollmentRepo;
+    private final StudentRepository studentRepository;
+    private final CourseRepository courseRepository;
+    private final EnrollmentRepository enrollmentRepository;
     private static final Logger log = LoggerUtil.getLogger(RegistrationService.class);
 
-    public RegistrationService(StudentRepository sr, CourseRepository cr, EnrollmentRepository er) {
-        this.studentRepo = sr;
-        this.courseRepo = cr;
-        this.enrollmentRepo = er;
+    public RegistrationService(StudentRepository studentRepository,
+                               CourseRepository courseRepository,
+                               EnrollmentRepository enrollmentRepository) {
+        this.studentRepository = studentRepository;
+        this.courseRepository = courseRepository;
+        this.enrollmentRepository = enrollmentRepository;
     }
 
     public void loadAll() {
-        studentRepo.ensureLoaded();
-        courseRepo.ensureLoaded();
+        studentRepository.ensureLoaded();
+        courseRepository.ensureLoaded();
         try {
-            enrollmentRepo.loadEnrollments(courseRepo.findAll());
+            enrollmentRepository.loadEnrollments(courseRepository.findAll());
         } catch (Exception e) {
             log.severe("Failed to load enrollments: " + e.getMessage());
         }
@@ -37,9 +36,9 @@ public class RegistrationService {
 
     public void saveAll() {
         try {
-            studentRepo.saveAll(studentRepo.findAll());
-            courseRepo.saveAll(courseRepo.findAll());
-            enrollmentRepo.saveEnrollments(courseRepo.findAll());
+            studentRepository.saveAll(studentRepository.findAll());
+            courseRepository.saveAll(courseRepository.findAll());
+            enrollmentRepository.saveEnrollments(courseRepository.findAll());
         } catch (Exception e) {
             log.severe("Failed to save data: " + e.getMessage());
         }
@@ -59,58 +58,58 @@ public class RegistrationService {
     }
 
     // --- Student operations ---
-    public void addStudent(String id, String name, String email) {
-        ValidationUtil.requireNonEmpty(id, "Banner ID");
+    public void addStudent(String bannerId, String name, String email) {
+        ValidationUtil.requireNonEmpty(bannerId, "Banner ID");
         ValidationUtil.requireNonEmpty(name, "Name");
-        ValidationUtil.validateBannerId(id);
+        ValidationUtil.validateBannerId(bannerId);
         ValidationUtil.validateEmail(email);
 
         // duplicate check
-        Optional<Student> existing = studentRepo.findById(id);
-        if (existing.isPresent()) {
-            throw new ValidationException("Student with id already exists: " + id);
+        Optional<Student> existingStudent = studentRepository.findById(bannerId);
+        if (existingStudent.isPresent()) {
+            throw new ValidationException("Student with id already exists: " + bannerId);
         }
-        Student s = new Student(id, name, email);
+        Student student = new Student(bannerId, name, email);
         try {
-            studentRepo.save(s);
-            log.info("ADD_STUDENT " + id);
+            studentRepository.save(student);
+            log.info("ADD_STUDENT " + bannerId);
         } catch (Exception e) {
             throw new RuntimeException("Failed to save student: " + e.getMessage(), e);
         }
     }
 
     public List<Student> listStudents() {
-        return studentRepo.findAll();
+        return studentRepository.findAll();
     }
 
-    public List<Student> searchStudents(String q) {
-        return studentRepo.search(q == null ? "" : q);
+    public List<Student> searchStudents(String query) {
+        return studentRepository.search(query == null ? "" : query);
     }
 
     // --- Course operations ---
-    public void addCourse(String code, String title, int capacity) {
-        ValidationUtil.requireNonEmpty(code, "Course code");
+    public void addCourse(String courseCode, String title, int capacity) {
+        ValidationUtil.requireNonEmpty(courseCode, "Course code");
         ValidationUtil.requireNonEmpty(title, "Course title");
         ValidationUtil.requireRange(capacity, 1, 500, "Capacity");
 
-        Optional<Course> existing = courseRepo.findByCode(code);
-        if (existing.isPresent()) throw new ValidationException("Course already exists: " + code);
+        Optional<Course> existingCourse = courseRepository.findByCode(courseCode);
+        if (existingCourse.isPresent()) throw new ValidationException("Course already exists: " + courseCode);
 
-        Course c = new Course(code, title, capacity);
+        Course course = new Course(courseCode, title, capacity);
         try {
-            courseRepo.save(c);
-            log.info("ADD_COURSE " + code);
+            courseRepository.save(course);
+            log.info("ADD_COURSE " + courseCode);
         } catch (Exception e) {
             throw new RuntimeException("Failed to save course: " + e.getMessage(), e);
         }
     }
 
     public List<Course> listCourses() {
-        return courseRepo.findAll();
+        return courseRepository.findAll();
     }
 
-    public List<Course> searchCourses(String q) {
-        return courseRepo.search(q == null ? "" : q);
+    public List<Course> searchCourses(String query) {
+        return courseRepository.search(query == null ? "" : query);
     }
 
     // --- Enrollment logic (business rules) ---
@@ -121,32 +120,29 @@ public class RegistrationService {
         ValidationUtil.requireNonEmpty(studentId, "Student ID");
         ValidationUtil.requireNonEmpty(courseCode, "Course code");
 
-        // student must exist
-        Optional<Student> st = studentRepo.findById(studentId);
-        if (!st.isPresent()) throw new ValidationException("Unknown student: " + studentId);
+        Optional<Student> studentOpt = studentRepository.findById(studentId);
+        if (!studentOpt.isPresent()) throw new ValidationException("Unknown student: " + studentId);
 
-        // course must exist
-        Optional<Course> co = courseRepo.findByCode(courseCode);
-        if (!co.isPresent()) throw new ValidationException("Unknown course: " + courseCode);
+        Optional<Course> courseOpt = courseRepository.findByCode(courseCode);
+        if (!courseOpt.isPresent()) throw new ValidationException("Unknown course: " + courseCode);
 
-        Course c = co.get();
+        Course course = courseOpt.get();
 
-        // duplicates
-        if (c.rosterContains(studentId)) throw new EnrollmentException("Student already enrolled in course");
-        if (c.waitlistContains(studentId)) throw new EnrollmentException("Student already waitlisted for course");
+        if (course.rosterContains(studentId)) throw new EnrollmentException("Student already enrolled in course");
+        if (course.waitlistContains(studentId)) throw new EnrollmentException("Student already waitlisted for course");
 
         boolean enrolled;
-        if (c.isFull()) {
-            c.addToWaitlist(studentId);
+        if (course.isFull()) {
+            course.addToWaitlist(studentId);
             enrolled = false;
             log.info("WAITLIST " + studentId + " -> " + courseCode);
         } else {
-            c.addToRoster(studentId);
+            course.addToRoster(studentId);
             enrolled = true;
             log.info("ENROLL " + studentId + " -> " + courseCode);
         }
 
-        persistCourse(c);
+        persistCourse(course);
         return enrolled;
     }
 
@@ -157,33 +153,32 @@ public class RegistrationService {
         ValidationUtil.requireNonEmpty(studentId, "Student ID");
         ValidationUtil.requireNonEmpty(courseCode, "Course code");
 
-        Optional<Course> co = courseRepo.findByCode(courseCode);
-        if (!co.isPresent()) throw new ValidationException("Unknown course: " + courseCode);
-        Course c = co.get();
+        Optional<Course> courseOpt = courseRepository.findByCode(courseCode);
+        if (!courseOpt.isPresent()) throw new ValidationException("Unknown course: " + courseCode);
+        Course course = courseOpt.get();
 
         boolean promoted = false;
-        if (c.removeFromRoster(studentId)) {
+        if (course.removeFromRoster(studentId)) {
             log.info("DROP " + studentId + " from " + courseCode);
-            String promotedId = c.promoteOneFromWaitlist();
-            if (promotedId != null) {
-                log.info("PROMOTE " + promotedId + " -> " + courseCode);
+            String promotedStudentId = course.promoteOneFromWaitlist();
+            if (promotedStudentId != null) {
+                log.info("PROMOTE " + promotedStudentId + " -> " + courseCode);
                 promoted = true;
             }
-        } else if (c.removeFromWaitlist(studentId)) {
+        } else if (course.removeFromWaitlist(studentId)) {
             log.info("WAITLIST_REMOVE " + studentId + " " + courseCode);
         } else {
             throw new EnrollmentException("Not enrolled or waitlisted");
         }
 
-        persistCourse(c);
+        persistCourse(course);
         return promoted;
     }
 
-    private void persistCourse(Course c) {
+    private void persistCourse(Course course) {
         try {
-            courseRepo.save(c);
-            // save enrollments (entire set)
-            enrollmentRepo.saveEnrollments(courseRepo.findAll());
+            courseRepository.save(course);
+            enrollmentRepository.saveEnrollments(courseRepository.findAll());
         } catch (Exception e) {
             log.severe("Failed to persist course/enrollments: " + e.getMessage());
             throw new RuntimeException("Storage error: " + e.getMessage(), e);

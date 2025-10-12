@@ -16,35 +16,40 @@ public class MainCLI {
     private static final Logger log = LoggerUtil.getLogger(MainCLI.class);
 
     public static void main(String[] args) {
-        boolean demo = args.length > 0 && "--demo".equalsIgnoreCase(args[0]);
+        boolean demoMode = args.length > 0 && "--demo".equalsIgnoreCase(args[0]);
 
-        // Repos (CSV file paths from config / system props)
-        String studentsFile = Config.get("students.file", "students.csv");
-        String coursesFile = Config.get("courses.file", "courses.csv");
-        String enrollmentsFile = Config.get("enrollments.file", "enrollments.csv");
+        // File paths from config / system properties
+        String studentsFilePath = Config.get("students.file", "students.csv");
+        String coursesFilePath = Config.get("courses.file", "courses.csv");
+        String enrollmentsFilePath = Config.get("enrollments.file", "enrollments.csv");
 
-        StudentRepository studentRepo = new CsvStudentRepository(studentsFile);
-        CourseRepository courseRepo = new CsvCourseRepository(coursesFile);
-        EnrollmentRepository enrollmentRepo = new CsvEnrollmentRepository(enrollmentsFile);
+        StudentRepository studentRepository = new CsvStudentRepository(studentsFilePath);
+        CourseRepository courseRepository = new CsvCourseRepository(coursesFilePath);
+        EnrollmentRepository enrollmentRepository = new CsvEnrollmentRepository(enrollmentsFilePath);
 
-        RegistrationService service = new RegistrationService(studentRepo, courseRepo, enrollmentRepo);
+        RegistrationService registrationService = new RegistrationService(
+                studentRepository, courseRepository, enrollmentRepository
+        );
 
-        if (demo) {
-            service.seedDemoData();
+        if (demoMode) {
+            registrationService.seedDemoData();
             log.info("Seeded demo data");
         } else {
-            service.loadAll();
+            registrationService.loadAll();
         }
 
         println("=== UCA Course Registration (Refactored) ===");
-        println("Files: students=" + studentsFile + " courses=" + coursesFile + " enrollments=" + enrollmentsFile);
-        menuLoop(service);
-        service.saveAll();
+        println("Files: students=" + studentsFilePath
+                + " courses=" + coursesFilePath
+                + " enrollments=" + enrollmentsFilePath);
+
+        runMenuLoop(registrationService);
+        registrationService.saveAll();
         println("Goodbye!");
     }
 
-    private static void menuLoop(RegistrationService service) {
-        Scanner sc = new Scanner(System.in);
+    private static void runMenuLoop(RegistrationService registrationService) {
+        Scanner scanner = new Scanner(System.in);
         while (true) {
             println("\nMenu:");
             println("1) Add student");
@@ -57,125 +62,108 @@ public class MainCLI {
             println("8) Search course");
             println("0) Exit");
             print("Choose: ");
-            String choice = sc.nextLine().trim();
+            String choice = scanner.nextLine().trim();
+
             try {
                 switch (choice) {
-                    case "1":
-                        addStudentUI(sc, service);
-                        break;
-                    case "2":
-                        addCourseUI(sc, service);
-                        break;
-                    case "3":
-                        enrollUI(sc, service);
-                        break;
-                    case "4":
-                        dropUI(sc, service);
-                        break;
-                    case "5":
-                        listStudents(service);
-                        break;
-                    case "6":
-                        listCourses(service);
-                        break;
-                    case "7":
-                        searchStudentUI(sc, service);
-                        break;
-                    case "8":
-                        searchCourseUI(sc, service);
-                        break;
-                    case "0":
-                        return;
-                    default:
-                        println("Invalid");
+                    case "1" -> addStudentUI(scanner, registrationService);
+                    case "2" -> addCourseUI(scanner, registrationService);
+                    case "3" -> enrollStudentUI(scanner, registrationService);
+                    case "4" -> dropStudentUI(scanner, registrationService);
+                    case "5" -> displayStudents(registrationService);
+                    case "6" -> displayCourses(registrationService);
+                    case "7" -> searchStudentUI(scanner, registrationService);
+                    case "8" -> searchCourseUI(scanner, registrationService);
+                    case "0" -> { return; }
+                    default -> println("Invalid choice.");
                 }
             } catch (ValidationException | EnrollmentException e) {
                 println("ERROR: " + e.getMessage());
             } catch (Exception e) {
-                // Safeguard: don't crash the UI
                 println("Unexpected error: " + e.getMessage());
-                LoggerUtil.getLogger(MainCLI.class).severe("Unexpected: " + e.getMessage());
+                log.severe("Unexpected: " + e.getMessage());
             }
         }
     }
 
-    private static void addStudentUI(Scanner sc, RegistrationService service) {
+    private static void addStudentUI(Scanner scanner, RegistrationService registrationService) {
         print("Banner ID: ");
-        String id = sc.nextLine().trim();
+        String bannerId = scanner.nextLine().trim();
         print("Name: ");
-        String name = sc.nextLine().trim();
+        String name = scanner.nextLine().trim();
         print("Email: ");
-        String email = sc.nextLine().trim();
-        service.addStudent(id, name, email);
+        String email = scanner.nextLine().trim();
+        registrationService.addStudent(bannerId, name, email);
         println("Student added.");
     }
 
-    private static void addCourseUI(Scanner sc, RegistrationService service) {
+    private static void addCourseUI(Scanner scanner, RegistrationService registrationService) {
         print("Course Code: ");
-        String code = sc.nextLine().trim();
+        String courseCode = scanner.nextLine().trim();
         print("Title: ");
-        String title = sc.nextLine().trim();
+        String title = scanner.nextLine().trim();
         print("Capacity (1-500): ");
-        String capStr = sc.nextLine().trim();
-        int cap = Integer.parseInt(capStr);
-        service.addCourse(code, title, cap);
+        int capacity = Integer.parseInt(scanner.nextLine().trim());
+        registrationService.addCourse(courseCode, title, capacity);
         println("Course added.");
     }
 
-    private static void enrollUI(Scanner sc, RegistrationService service) {
+    private static void enrollStudentUI(Scanner scanner, RegistrationService registrationService) {
         print("Student ID: ");
-        String sid = sc.nextLine().trim();
+        String studentId = scanner.nextLine().trim();
         print("Course Code: ");
-        String cc = sc.nextLine().trim();
-        boolean enrolled = service.enroll(sid, cc);
-        if (enrolled) println("Enrolled.");
-        else println("Course full. Added to waitlist.");
+        String courseCode = scanner.nextLine().trim();
+        boolean enrolled = registrationService.enroll(studentId, courseCode);
+        println(enrolled ? "Enrolled." : "Course full. Added to waitlist.");
     }
 
-    private static void dropUI(Scanner sc, RegistrationService service) {
+    private static void dropStudentUI(Scanner scanner, RegistrationService registrationService) {
         print("Student ID: ");
-        String sid = sc.nextLine().trim();
+        String studentId = scanner.nextLine().trim();
         print("Course Code: ");
-        String cc = sc.nextLine().trim();
-        boolean promoted = service.drop(sid, cc);
-        if (promoted) println("Dropped and a waitlisted student was promoted.");
-        else println("Dropped.");
+        String courseCode = scanner.nextLine().trim();
+        boolean promoted = registrationService.drop(studentId, courseCode);
+        println(promoted ? "Dropped and a waitlisted student was promoted." : "Dropped.");
     }
 
-    private static void listStudents(RegistrationService service) {
+    private static void displayStudents(RegistrationService registrationService) {
         println("Students:");
-        List<Student> students = service.listStudents();
-        for (Student s : students) println(" - " + s);
-    }
-
-    private static void listCourses(RegistrationService service) {
-        println("Courses:");
-        List<Course> courses = service.listCourses();
-        for (Course c : courses) {
-            println(" - " + c.getCode() + " " + c.getTitle() + " cap=" + c.getCapacity()
-                    + " enrolled=" + c.getRoster().size() + " wait=" + c.getWaitlist().size());
+        List<Student> allStudents = registrationService.listStudents();
+        for (Student student : allStudents) {
+            println(" - " + student);
         }
     }
 
-    private static void searchStudentUI(Scanner sc, RegistrationService service) {
+    private static void displayCourses(RegistrationService registrationService) {
+        println("Courses:");
+        List<Course> allCourses = registrationService.listCourses();
+        for (Course course : allCourses) {
+            println(" - " + course.getCode() + " " + course.getTitle()
+                    + " cap=" + course.getCapacity()
+                    + " enrolled=" + course.getRoster().size()
+                    + " wait=" + course.getWaitlist().size());
+        }
+    }
+
+    private static void searchStudentUI(Scanner scanner, RegistrationService registrationService) {
         print("Query (id or name substring): ");
-        String q = sc.nextLine().trim();
-        List<Student> results = service.searchStudents(q);
+        String query = scanner.nextLine().trim();
+        List<Student> results = registrationService.searchStudents(query);
         if (results.isEmpty()) println("No students found.");
         else {
             println("Found:");
-            for (Student s : results) println(" - " + s);
+            for (Student student : results) println(" - " + student);
         }
     }
 
-    private static void searchCourseUI(Scanner sc, RegistrationService service) {
+    private static void searchCourseUI(Scanner scanner, RegistrationService registrationService) {
         print("Query (code or title substring): ");
-        String q = sc.nextLine().trim();
-        List<Course> results = service.searchCourses(q);
+        String query = scanner.nextLine().trim();
+        List<Course> results = registrationService.searchCourses(query);
         if (results.isEmpty()) println("No courses found.");
         else {
             println("Found:");
-            for (Course c : results) println(" - " + c.getCode() + " " + c.getTitle());
+            for (Course course : results) println(" - " + course.getCode() + " " + course.getTitle());
         }
     }
 
