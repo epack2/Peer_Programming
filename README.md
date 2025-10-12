@@ -13,24 +13,49 @@ The refactor separates responsibilities into layers and various classes for main
 - Demo mode with seeded data
 
 ## Project Structure
+```
+main
+└── java
+    ├── app
+    │   └── MainCLI.java
+    ├── exception
+    │   ├── EnrollmentException.java
+    │   └── ValidationException.java
+    ├── model
+    │   ├── Course.java
+    │   └── Student.java
+    ├── repo
+    │   ├── CourseRepository.java
+    │   ├── EnrollmentRepository.java
+    │   ├── impl
+    │   │   ├── CsvCourseRepository.java
+    │   │   ├── CsvEnrollmentRepository.java
+    │   │   └── CsvStudentRepository.java
+    │   └── StudentRepository.java
+    ├── service
+    │   └── RegistrationService.java
+    └── util
+        ├── Config.java
+        ├── LoggerUtil.java
+        └── ValidationUtil.java
+```
 
-src/
-├─ app/
-│ └─ MainCLI.java # CLI entry point (**MAIN ENTRY PONT**)
-├─ model/
-│ ├─ Student.java
-│ └─ Course.java
-├─ repo/
-│ ├─ StudentRepository.java
-│ ├─ CourseRepository.java
-│ ├─ EnrollmentRepository.java
-│ └─ impl/ # CSV/JSON implementations
-├─ service/
-│ └─ RegistrationService.java
-├─ util/
-│ ├─ Config.java
-│ └─ LoggerUtil.java
-└─ exception/
-├─ ValidationException.java
-└─ EnrollmentException.java
+## How to Run
+
+### Build
+mvn -q -DskipTests package 
+
+### Run 
+
+java -jar target/course-registration-0.1.0.jar # uses configured storage
+
+### Seeded demo
+
+java -jar target/course-registration-0.1.0.jar --demo
+
+
+# Project Owner
+- Pranaya Pudasaini
+- Ethan Pack
+- Yapi Joas Samuel N'guessan
 

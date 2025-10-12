@@ -12,9 +12,10 @@ public class Student {
 
     public Student(String id, String name, String email) {
         // Basic defensiveness; service layer will also validate more fully
-        ValidationUtil.requireNonEmpty(id, "Banner ID");
-        ValidationUtil.requireNonEmpty(name, "Name");
-        ValidationUtil.requireNonEmpty(email, "Email");
+        ValidationUtil.validateBannerId(id);
+        ValidationUtil.validateName(name);
+        ValidationUtil.validateEmail(email);
+
 
         this.id = id;
         this.name = name;
