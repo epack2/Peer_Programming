@@ -1,14 +1,18 @@
 package repo;
 
-
 import model.Student;
-import java.util.*;
 
+import java.util.List;
+import java.util.Optional;
 
+/**
+ * Repository interface for students.
+ */
 public interface StudentRepository {
-    Optional<Student> findByBannerId(String bannerId);
-    Optional<Student> findByName(String name);
     List<Student> findAll();
-    void save(Student student); // upsert
-    void delete(String bannerId);
+    Optional<Student> findById(String id);
+    void save(Student student) throws Exception;
+    void saveAll(List<Student> students) throws Exception;
+    List<Student> search(String query);
+    void ensureLoaded(); // load from underlying storage if needed
 }

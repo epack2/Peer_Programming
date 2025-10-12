@@ -1,50 +1,32 @@
 package model;
 
-
-import java.util.*;
 import util.ValidationUtil;
 
-
-
-public final class Student {
-    private final String bannerId; // unique identifier (e.g. B12345678)
+/**
+ * Domain model: Student (no UI/persistence logic here).
+ */
+public class Student {
+    private final String id;
     private final String name;
-    private final List<Integer> grades = new ArrayList<>();
+    private final String email;
 
+    public Student(String id, String name, String email) {
+        // Basic defensiveness; service layer will also validate more fully
+        ValidationUtil.requireNonEmpty(id, "Banner ID");
+        ValidationUtil.requireNonEmpty(name, "Name");
+        ValidationUtil.requireNonEmpty(email, "Email");
 
-    public Student(String bannerId, String name) {
-        ValidationUtil.requireNonEmpty(name, "name");
-        ValidationUtil.requireBannerId(bannerId);
-        this.bannerId = bannerId.trim();
-        this.name = name.trim();
+        this.id = id;
+        this.name = name;
+        this.email = email;
     }
 
-
-    public String getBannerId() { return bannerId; }
-
-
+    public String getId() { return id; }
     public String getName() { return name; }
-
-
-    public void addGrade(int grade) {
-        ValidationUtil.requireGradeInRange(grade);
-        grades.add(grade);
-    }
-
-
-    public List<Integer> getGrades() {
-        return (grades);
-    }
-
-
-    public double average() {
-        if (grades.isEmpty()) return 0.0;
-        return grades.stream().mapToInt(Integer::intValue).average().orElse(0.0);
-    }
-
+    public String getEmail() { return email; }
 
     @Override
     public String toString() {
-        return String.format("%s (%s) | grades=%s | avg=%.2f", name, bannerId, grades, average());
+        return id + " " + name + " <" + email + ">";
     }
 }

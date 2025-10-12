@@ -1,4 +1,15 @@
 package repo;
 
-public class CourseRepository {
+import model.Course;
+
+import java.util.List;
+import java.util.Optional;
+
+public interface CourseRepository {
+    List<Course> findAll();
+    Optional<Course> findByCode(String code);
+    void save(Course course) throws Exception;
+    void saveAll(List<Course> courses) throws Exception;
+    List<Course> search(String query);
+    void ensureLoaded();
 }
