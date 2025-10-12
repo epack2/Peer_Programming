@@ -1,0 +1,15 @@
+/home/tack/Documents/swe-group/Peer_Programming/src/main/java/model/Student.java
+/home/tack/Documents/swe-group/Peer_Programming/src/main/java/service/RegistrationService.java
+/home/tack/Documents/swe-group/Peer_Programming/src/main/java/repo/impl/CsvStudentRepository.java
+/home/tack/Documents/swe-group/Peer_Programming/src/main/java/repo/impl/CsvEnrollmentRepository.java
+/home/tack/Documents/swe-group/Peer_Programming/src/main/java/exception/ValidationException.java
+/home/tack/Documents/swe-group/Peer_Programming/src/main/java/repo/CourseRepository.java
+/home/tack/Documents/swe-group/Peer_Programming/src/main/java/util/Config.java
+/home/tack/Documents/swe-group/Peer_Programming/src/main/java/exception/EnrollmentException.java
+/home/tack/Documents/swe-group/Peer_Programming/src/main/java/repo/EnrollmentRepository.java
+/home/tack/Documents/swe-group/Peer_Programming/src/main/java/util/LoggerUtil.java
+/home/tack/Documents/swe-group/Peer_Programming/src/main/java/app/MainCLI.java
+/home/tack/Documents/swe-group/Peer_Programming/src/main/java/repo/impl/CsvCourseRepository.java
+/home/tack/Documents/swe-group/Peer_Programming/src/main/java/repo/StudentRepository.java
+/home/tack/Documents/swe-group/Peer_Programming/src/main/java/util/ValidationUtil.java
+/home/tack/Documents/swe-group/Peer_Programming/src/main/java/model/Course.java
