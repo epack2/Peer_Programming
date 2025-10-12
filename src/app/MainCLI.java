@@ -3,13 +3,11 @@ package app;
 import model.*;
 import repo.*;
 import repo.impl.*;
-import service.*;
+import service.RegistrationService;
 import util.*;
 import exception.*;
-
 import java.util.*;
-import java.util.logging.*;
-
+import java.util.logging.Logger;
 
 /**
  * CLI entry point. Keeps UI only: parsing user input and delegating to service.
