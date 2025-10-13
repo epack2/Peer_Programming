@@ -53,6 +53,10 @@ java -jar target/course-registration-0.1.0.jar # uses configured storage
 
 java -jar target/course-registration-0.1.0.jar --demo
 
+# Alternative Run
+
+You can use your IDE (eg. IntelliJ, VS Code,etc) and run the MainCLI.java file.
+
 
 # Project Owner
 - Pranaya Pudasaini
