@@ -57,6 +57,9 @@ java -jar target/course-registration-0.1.0.jar --demo
 
 You can use your IDE (eg. IntelliJ, VS Code,etc) and run the MainCLI.java file.
 
+# Test Run
+
+mvn test
 
 # Project Owner
 - Pranaya Pudasaini
